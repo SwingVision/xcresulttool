@@ -35,7 +35,7 @@ async function run(): Promise<void> {
     }
 
     // Get the path to our CLI
-    const cliPath = path.join(__dirname, 'cli.js')
+    const cliPath = path.join(__dirname, 'lib/cli.js')
 
     // Make sure the CLI is executable
     fs.chmodSync(cliPath, '755')

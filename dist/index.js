@@ -86494,7 +86494,7 @@ function run() {
                 return;
             }
             // Get the path to our CLI
-            const cliPath = path.join(__dirname, 'cli.js');
+            const cliPath = path.join(__dirname, 'lib/cli.js');
             // Make sure the CLI is executable
             fs.chmodSync(cliPath, '755');
             // For each valid path, run the CLI
