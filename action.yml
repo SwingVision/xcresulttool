@@ -11,13 +11,13 @@ inputs:
   title:
     description: 'Title for the check results'
     default: 'Xcode test results'
-  show-passed-tests:
+  show_passed_tests:
     description: 'Show passed tests'
     default: true
-  show-code-coverage:
+  show_code_coverage:
     description: 'Whether to show code coverage'
     default: true
-  upload-bundles:
+  upload_bundles:
     description: 'Whether to upload the xcresult bundles. possible values: always, failure, never. Specifying failure will only upload the bundle if all the tests do not pass.'
     default: always
 runs:

@@ -20,6 +20,7 @@ export class Parser {
     const args = [
       'xcresulttool',
       'export',
+      '--legacy',
       '--type',
       'file',
       '--path',
@@ -58,6 +59,7 @@ export class Parser {
     const args = [
       'xcresulttool',
       'get',
+      '--legacy',
       '--path',
       this.bundlePath,
       '--format',
