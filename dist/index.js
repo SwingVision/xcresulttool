@@ -1,181 +1,5 @@
-require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
+/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 3109:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(1514));
-const path = __importStar(__nccwpck_require__(1017));
-const fs = __importStar(__nccwpck_require__(7147));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // Get inputs from the action
-            const inputPaths = core.getMultilineInput('path');
-            const showPassedTests = core.getBooleanInput('show-passed-tests');
-            const showCodeCoverage = core.getBooleanInput('show-code-coverage');
-            const token = core.getInput('token');
-            const title = core.getInput('title');
-            const uploadBundles = core.getInput('upload-bundles').toLowerCase();
-            // Validate inputs
-            if (inputPaths.length === 0) {
-                core.setFailed('No xcresult paths provided');
-                return;
-            }
-            // Check if paths exist
-            const validPaths = [];
-            for (const inputPath of inputPaths) {
-                if (fs.existsSync(inputPath)) {
-                    validPaths.push(inputPath);
-                }
-                else {
-                    core.warning(`Path does not exist: ${inputPath}`);
-                }
-            }
-            if (validPaths.length === 0) {
-                core.setFailed('No valid xcresult paths found');
-                return;
-            }
-            // Get the path to our CLI
-            const cliPath = path.join(__dirname, 'cli.js');
-            // Make sure the CLI is executable
-            fs.chmodSync(cliPath, '755');
-            // For each valid path, run the CLI
-            for (const xcresultPath of validPaths) {
-                core.info(`Processing xcresult: ${xcresultPath}`);
-                // Build CLI arguments
-                const args = [
-                    cliPath,
-                    '--path',
-                    xcresultPath,
-                    '--show-passed-tests',
-                    showPassedTests.toString(),
-                    '--show-code-coverage',
-                    showCodeCoverage.toString(),
-                    '--github-action' // Special flag to indicate we're running in GitHub Actions
-                ];
-                // Run the CLI and capture output
-                let stdout = '';
-                let stderr = '';
-                const options = {
-                    listeners: {
-                        stdout: (data) => {
-                            stdout += data.toString();
-                        },
-                        stderr: (data) => {
-                            stderr += data.toString();
-                        }
-                    }
-                };
-                const exitCode = yield exec.exec('node', args, options);
-                if (exitCode !== 0) {
-                    core.error(`CLI failed with exit code ${exitCode}`);
-                    core.error(stderr);
-                    core.setFailed('Failed to process xcresult');
-                    return;
-                }
-                // Add the output to the GitHub Actions summary
-                yield core.summary.addRaw(stdout).write();
-                // If token is provided, create a check run
-                if (token) {
-                    // Extract the summary and details from the CLI output
-                    // This assumes our CLI outputs in a specific format we can parse
-                    const summaryMatch = stdout.match(/# Test Results Summary\n\n([\s\S]*?)(?=\n# |$)/);
-                    const detailsMatch = stdout.match(/# Test Details\n\n([\s\S]*?)(?=\n# |$)/);
-                    const summary = summaryMatch
-                        ? summaryMatch[1]
-                        : 'No test summary available';
-                    const details = detailsMatch
-                        ? detailsMatch[1]
-                        : 'No test details available';
-                    // Determine test status from summary
-                    const failedMatch = summary.match(/Failed tests: (\d+)/);
-                    const failedCount = failedMatch ? parseInt(failedMatch[1]) : 0;
-                    const testStatus = failedCount > 0 ? 'failure' : 'success';
-                    // Create GitHub check
-                    const github = __nccwpck_require__(5438);
-                    const octokit = github.getOctokit(token);
-                    const owner = github.context.repo.owner;
-                    const repo = github.context.repo.repo;
-                    const pr = github.context.payload.pull_request;
-                    const sha = (pr && pr.head.sha) || github.context.sha;
-                    yield octokit.rest.checks.create({
-                        owner,
-                        repo,
-                        name: title,
-                        head_sha: sha,
-                        status: 'completed',
-                        conclusion: testStatus,
-                        output: {
-                            title: 'Xcode Test Results',
-                            summary,
-                            text: details
-                        }
-                    });
-                }
-                // Handle bundle uploads if requested
-                if (uploadBundles === 'always' ||
-                    (uploadBundles === 'failure' &&
-                        stdout.includes('Failed tests: ') &&
-                        !stdout.includes('Failed tests: 0'))) {
-                    core.info(`Uploading xcresult bundle: ${xcresultPath}`);
-                    const artifact = __nccwpck_require__(9450);
-                    const artifactClient = artifact.create();
-                    const artifactName = path.basename(xcresultPath);
-                    // We need to list all files in the xcresult bundle
-                    const { glob } = __nccwpck_require__(1957);
-                    const files = yield glob(`${xcresultPath}/**/*`);
-                    if (files.length > 0) {
-                        yield artifactClient.uploadArtifact(artifactName, files, xcresultPath, { continueOnError: false });
-                    }
-                }
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-run();
-
-
-/***/ }),
 
 /***/ 9450:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
@@ -86598,6 +86422,182 @@ utils.walkdir = function(dirpath, base, callback) {
 
 /***/ }),
 
+/***/ 399:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const exec = __importStar(__nccwpck_require__(1514));
+const path = __importStar(__nccwpck_require__(1017));
+const fs = __importStar(__nccwpck_require__(7147));
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Get inputs from the action
+            const inputPaths = core.getMultilineInput('path');
+            const showPassedTests = core.getBooleanInput('show-passed-tests');
+            const showCodeCoverage = core.getBooleanInput('show-code-coverage');
+            const token = core.getInput('token');
+            const title = core.getInput('title');
+            const uploadBundles = core.getInput('upload-bundles').toLowerCase();
+            // Validate inputs
+            if (inputPaths.length === 0) {
+                core.setFailed('No xcresult paths provided');
+                return;
+            }
+            // Check if paths exist
+            const validPaths = [];
+            for (const inputPath of inputPaths) {
+                if (fs.existsSync(inputPath)) {
+                    validPaths.push(inputPath);
+                }
+                else {
+                    core.warning(`Path does not exist: ${inputPath}`);
+                }
+            }
+            if (validPaths.length === 0) {
+                core.setFailed('No valid xcresult paths found');
+                return;
+            }
+            // Get the path to our CLI
+            const cliPath = path.join(__dirname, 'cli.js');
+            // Make sure the CLI is executable
+            fs.chmodSync(cliPath, '755');
+            // For each valid path, run the CLI
+            for (const xcresultPath of validPaths) {
+                core.info(`Processing xcresult: ${xcresultPath}`);
+                // Build CLI arguments
+                const args = [
+                    cliPath,
+                    '--path',
+                    xcresultPath,
+                    '--show-passed-tests',
+                    showPassedTests.toString(),
+                    '--show-code-coverage',
+                    showCodeCoverage.toString(),
+                    '--github-action' // Special flag to indicate we're running in GitHub Actions
+                ];
+                // Run the CLI and capture output
+                let stdout = '';
+                let stderr = '';
+                const options = {
+                    listeners: {
+                        stdout: (data) => {
+                            stdout += data.toString();
+                        },
+                        stderr: (data) => {
+                            stderr += data.toString();
+                        }
+                    }
+                };
+                const exitCode = yield exec.exec('node', args, options);
+                if (exitCode !== 0) {
+                    core.error(`CLI failed with exit code ${exitCode}`);
+                    core.error(stderr);
+                    core.setFailed('Failed to process xcresult');
+                    return;
+                }
+                // Add the output to the GitHub Actions summary
+                yield core.summary.addRaw(stdout).write();
+                // If token is provided, create a check run
+                if (token) {
+                    // Extract the summary and details from the CLI output
+                    // This assumes our CLI outputs in a specific format we can parse
+                    const summaryMatch = stdout.match(/# Test Results Summary\n\n([\s\S]*?)(?=\n# |$)/);
+                    const detailsMatch = stdout.match(/# Test Details\n\n([\s\S]*?)(?=\n# |$)/);
+                    const summary = summaryMatch
+                        ? summaryMatch[1]
+                        : 'No test summary available';
+                    const details = detailsMatch
+                        ? detailsMatch[1]
+                        : 'No test details available';
+                    // Determine test status from summary
+                    const failedMatch = summary.match(/Failed tests: (\d+)/);
+                    const failedCount = failedMatch ? parseInt(failedMatch[1]) : 0;
+                    const testStatus = failedCount > 0 ? 'failure' : 'success';
+                    // Create GitHub check
+                    const github = __nccwpck_require__(5438);
+                    const octokit = github.getOctokit(token);
+                    const owner = github.context.repo.owner;
+                    const repo = github.context.repo.repo;
+                    const pr = github.context.payload.pull_request;
+                    const sha = (pr && pr.head.sha) || github.context.sha;
+                    yield octokit.rest.checks.create({
+                        owner,
+                        repo,
+                        name: title,
+                        head_sha: sha,
+                        status: 'completed',
+                        conclusion: testStatus,
+                        output: {
+                            title: 'Xcode Test Results',
+                            summary,
+                            text: details
+                        }
+                    });
+                }
+                // Handle bundle uploads if requested
+                if (uploadBundles === 'always' ||
+                    (uploadBundles === 'failure' &&
+                        stdout.includes('Failed tests: ') &&
+                        !stdout.includes('Failed tests: 0'))) {
+                    core.info(`Uploading xcresult bundle: ${xcresultPath}`);
+                    const artifact = __nccwpck_require__(9450);
+                    const artifactClient = artifact.create();
+                    const artifactName = path.basename(xcresultPath);
+                    // We need to list all files in the xcresult bundle
+                    const { glob } = __nccwpck_require__(1957);
+                    const files = yield glob(`${xcresultPath}/**/*`);
+                    if (files.length > 0) {
+                        yield artifactClient.uploadArtifact(artifactName, files, xcresultPath, { continueOnError: false });
+                    }
+                }
+            }
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
 /***/ 2877:
 /***/ ((module) => {
 
@@ -96038,9 +96038,8 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(3109);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(399);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=index.js.map
