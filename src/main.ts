@@ -13,9 +13,9 @@ const {stat} = promises
 async function run(): Promise<void> {
   try {
     const inputPaths = core.getMultilineInput('path')
-    const showPassedTests = core.getBooleanInput('show-passed-tests')
-    const showCodeCoverage = core.getBooleanInput('show-code-coverage')
-    let uploadBundles = core.getInput('upload-bundles').toLowerCase()
+    const showPassedTests = core.getBooleanInput('show_passed_tests')
+    const showCodeCoverage = core.getBooleanInput('show_code_coverage')
+    let uploadBundles = core.getInput('upload_bundles').toLowerCase()
     if (uploadBundles === 'true') {
       uploadBundles = 'always'
     } else if (uploadBundles === 'false') {
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
             continue
           }
 
-          const artifactClient = artifact.create()
+          const artifactClient = artifact.default
           const artifactName = path.basename(uploadBundlePath)
 
           const rootDirectory = uploadBundlePath
@@ -139,7 +139,6 @@ async function run(): Promise<void> {
                 artifactName,
                 files,
                 rootDirectory,
-                options
               )
             }
           })
