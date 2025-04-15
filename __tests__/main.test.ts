@@ -298,8 +298,8 @@ test('TestResults#669.xcresult', async () => {
 
 test('test runs', () => {
   process.env['INPUT_PATH'] = '__tests__/data/Example.xcresult'
-  process.env['INPUT_SHOW-PASSED-TESTS'] = 'true'
-  process.env['INPUT_SHOW-CODE-COVERAGE'] = 'true'
+  process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
+  process.env['INPUT_SHOW_CODE_COVERAGE'] = 'false'
   process.env['INPUT_UPLOAD-BUNDLES'] = 'true'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
