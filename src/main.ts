@@ -139,6 +139,7 @@ async function run(): Promise<void> {
                 artifactName,
                 files,
                 rootDirectory,
+                options
               )
             }
           })
@@ -159,6 +160,7 @@ async function mergeResultBundle(
   const args = ['xcresulttool', 'merge']
     .concat(inputPaths)
     .concat(['--output-path', outputPath])
+
   const options = {
     silent: true
   }
