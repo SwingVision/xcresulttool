@@ -134,9 +134,6 @@ async function run(): Promise<void> {
           const artifactName = path.basename(uploadBundlePath)
 
           const rootDirectory = uploadBundlePath
-          const options = {
-            continueOnError: false
-          }
 
           glob(`${uploadBundlePath}/**/*`, async (error, files) => {
             if (error) {
@@ -147,7 +144,6 @@ async function run(): Promise<void> {
                 artifactName,
                 files,
                 rootDirectory
-                // options
               )
             }
           })
