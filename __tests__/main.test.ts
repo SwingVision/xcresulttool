@@ -331,6 +331,34 @@ test('merge result bundles', async () => {
   }
 });
 
+test("SwingVision Integration Test", async () => {
+
+  process.env["INPUT_PATH"] = '__tests__/data/Example.xcresult'
+  process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
+  process.env['INPUT_SHOW_CODE_COVERAGE'] = 'false'
+  process.env['INPUT_UPLOAD_BUNDLES'] = 'never'
+  const np = process.execPath
+  const ip = path.join(__dirname, '..', 'lib', 'main.js')
+  const options: cp.ExecFileSyncOptions = {
+    env: process.env
+  }
+  console.log(cp.execFileSync(np, [ip], options).toString())
+})
+
+test("SwingVision Merged Bundles", async () => {
+  process.env["INPUT_PATH"] = '__tests__/data/CapybaraTests.xcresult\n__tests__/data/CapybaraUITests.xcresult'
+  process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
+  process.env['INPUT_SHOW_CODE_COVERAGE'] = 'false'
+  process.env['INPUT_UPLOAD_BUNDLES'] = 'never'
+  process.env['INPUT_DELETE_MERGED_RESULTS'] = 'true'
+  const np = process.execPath
+  const ip = path.join(__dirname, '..', 'lib', 'main.js')
+  const options: cp.ExecFileSyncOptions = {
+    env: process.env
+  }
+  console.log(cp.execFileSync(np, [ip], options).toString())
+})
+
 test('test runs', () => {
   process.env['INPUT_PATH'] = '__tests__/data/Example.xcresult'
   process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
