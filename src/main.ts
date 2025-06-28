@@ -16,7 +16,7 @@ async function run(): Promise<void> {
     const showPassedTests = core.getBooleanInput('show_passed_tests')
     const showCodeCoverage = core.getBooleanInput('show_code_coverage')
     const deleteMergedBundles = core.getBooleanInput('delete_merged_results')
-    var isUsingMergedBundle = false;
+    var isUsingMergedBundle = false
     let uploadBundles = core.getInput('upload_bundles').toLowerCase()
     if (uploadBundles === 'true') {
       uploadBundles = 'always'
@@ -33,15 +33,15 @@ async function run(): Promise<void> {
         core.error((error as Error).message)
       }
     }
-    const mergedOutput = 'TestResults/Merged.xcresult';
-    let bundlePath = path.join(os.tmpdir(), mergedOutput);
+    const mergedOutput = 'TestResults/Merged.xcresult'
+    let bundlePath = path.join(os.tmpdir(), mergedOutput)
 
     if (existsSync(bundlePath) && deleteMergedBundles) {
-      rmSync(bundlePath, { recursive: true, force: true })
+      rmSync(bundlePath, {recursive: true, force: true})
     }
 
     if (inputPaths.length > 1) {
-      isUsingMergedBundle = true;
+      isUsingMergedBundle = true
       await mergeResultBundle(bundlePaths, bundlePath)
     } else {
       const inputPath = inputPaths[0]
@@ -146,18 +146,16 @@ async function run(): Promise<void> {
               await artifactClient.uploadArtifact(
                 artifactName,
                 files,
-                rootDirectory,
+                rootDirectory
                 // options
               )
             }
           })
         }
       }
-
-
     }
     if (isUsingMergedBundle && deleteMergedBundles) {
-      await rmSync(bundlePath, { recursive: true, force: true })
+      await rmSync(bundlePath, {recursive: true, force: true})
     }
   } catch (error) {
     core.setFailed((error as Error).message)
