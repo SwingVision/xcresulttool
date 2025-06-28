@@ -344,7 +344,7 @@ test('SwingVision Integration Test', async () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  cp.execFileSync(np, [ip], options).toString();
+  cp.execFileSync(np, [ip], options).toString()
 })
 
 test('SwingVision Merged Bundles', async () => {
@@ -359,7 +359,7 @@ test('SwingVision Merged Bundles', async () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  cp.execFileSync(np, [ip], options).toString();
+  cp.execFileSync(np, [ip], options).toString()
 })
 
 test('test runs', () => {
@@ -372,5 +372,5 @@ test('test runs', () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  cp.execFileSync(np, [ip], options).toString();
+  cp.execFileSync(np, [ip], options).toString()
 })
