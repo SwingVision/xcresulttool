@@ -1,12 +1,14 @@
 import * as cp from 'child_process'
 import * as github from '@actions/github'
 import * as os from 'os'
+import * as fs from 'fs';
 import * as path from 'path'
 import * as process from 'process'
 import {expect, test} from '@jest/globals'
 import {promises} from 'fs'
 const {readFile, writeFile} = promises
 import {Formatter, FormatterOptions} from '../src/formatter'
+import {mergeResultBundle} from '../src/main'
 
 test('Example.xcresult', async () => {
   const bundlePath = '__tests__/data/Example.xcresult'
@@ -296,11 +298,44 @@ test('TestResults#669.xcresult', async () => {
   )
 })
 
+test('merge result bundles', async () => {
+  
+  const inputPrefix = "__tests__/data";
+  const tmpBase = fs.mkdtempSync(path.join(os.tmpdir(), 'mergetest-capybara'));
+  const mergedBundlePath = `${tmpBase}/CapybaraAll.xcresult`;
+
+  try {
+    await mergeResultBundle([`${inputPrefix}/CapybaraTests.xcresult`, `${inputPrefix}/CapybaraUITests.xcresult`], mergedBundlePath);
+    const formatter = new Formatter(mergedBundlePath)
+    const report = await formatter.format()
+
+  let root = ''
+  if (process.env.GITHUB_REPOSITORY) {
+    const pr = github.context.payload.pull_request
+    const sha = (pr && pr.head.sha) || github.context.sha
+    root = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/blob/${sha}/`
+  }
+  const re = new RegExp(`${root}`, 'g')
+  const reportText = `${report.reportSummary}\n${report.reportDetail}`.replace(
+    re,
+    ''
+  )
+
+  const outputPath = path.join(os.tmpdir(), 'CapybaraAll.md')
+  await writeFile(outputPath, reportText)
+  expect((await readFile(outputPath)).toString()).toBe(
+    (await readFile('__tests__/data/CapybaraAll.md')).toString()
+  )
+  } finally {
+    fs.rmSync(mergedBundlePath, { recursive: true, force: true });
+  }
+});
+
 test('test runs', () => {
   process.env['INPUT_PATH'] = '__tests__/data/Example.xcresult'
   process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
   process.env['INPUT_SHOW_CODE_COVERAGE'] = 'false'
-  process.env['INPUT_UPLOAD-BUNDLES'] = 'true'
+  process.env['INPUT_UPLOAD_BUNDLES'] = 'true'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
   const options: cp.ExecFileSyncOptions = {

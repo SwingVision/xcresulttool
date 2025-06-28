@@ -139,7 +139,7 @@ async function run(): Promise<void> {
                 artifactName,
                 files,
                 rootDirectory,
-                options
+                // options
               )
             }
           })
@@ -153,7 +153,7 @@ async function run(): Promise<void> {
 
 run()
 
-async function mergeResultBundle(
+export async function mergeResultBundle(
   inputPaths: string[],
   outputPath: string
 ): Promise<void> {
