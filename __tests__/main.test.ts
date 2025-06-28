@@ -300,14 +300,14 @@ test('TestResults#669.xcresult', async () => {
 
 test('merge result bundles', async () => {
   const inputPrefix = '__tests__/data'
-  const tmpBase = fs.mkdtempSync(path.join(os.tmpdir(), 'mergetest-capybara'))
-  const mergedBundlePath = `${tmpBase}/CapybaraAll.xcresult`
+  const tmpBase = fs.mkdtempSync(path.join(os.tmpdir(), 'mergetest'))
+  const mergedBundlePath = `${tmpBase}/ExampleMergedAll.xcresult`
 
   try {
     await mergeResultBundle(
       [
-        `${inputPrefix}/CapybaraTests.xcresult`,
-        `${inputPrefix}/CapybaraUITests.xcresult`
+        `${inputPrefix}/ExampleMergedTests.xcresult`,
+        `${inputPrefix}/ExampleMergedUITests.xcresult`
       ],
       mergedBundlePath
     )
@@ -324,10 +324,10 @@ test('merge result bundles', async () => {
     const reportText =
       `${report.reportSummary}\n${report.reportDetail}`.replace(re, '')
 
-    const outputPath = path.join(os.tmpdir(), 'CapybaraAll.md')
+    const outputPath = path.join(os.tmpdir(), 'ExampleMergedAll.md')
     await writeFile(outputPath, reportText)
     expect((await readFile(outputPath)).toString()).toBe(
-      (await readFile('__tests__/data/CapybaraAll.md')).toString()
+      (await readFile('__tests__/data/ExampleMergedAll.md')).toString()
     )
   } finally {
     fs.rmSync(mergedBundlePath, {recursive: true, force: true})
@@ -344,12 +344,12 @@ test('SwingVision Integration Test', async () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  console.log(cp.execFileSync(np, [ip], options).toString())
+  cp.execFileSync(np, [ip], options).toString();
 })
 
 test('SwingVision Merged Bundles', async () => {
   process.env['INPUT_PATH'] =
-    '__tests__/data/CapybaraTests.xcresult\n__tests__/data/CapybaraUITests.xcresult'
+    '__tests__/data/ExampleMergedTests.xcresult\n__tests__/data/ExampleMergedUITests.xcresult'
   process.env['INPUT_SHOW_PASSED_TESTS'] = 'true'
   process.env['INPUT_SHOW_CODE_COVERAGE'] = 'false'
   process.env['INPUT_UPLOAD_BUNDLES'] = 'never'
@@ -359,7 +359,7 @@ test('SwingVision Merged Bundles', async () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  console.log(cp.execFileSync(np, [ip], options).toString())
+  cp.execFileSync(np, [ip], options).toString();
 })
 
 test('test runs', () => {
@@ -372,5 +372,5 @@ test('test runs', () => {
   const options: cp.ExecFileSyncOptions = {
     env: process.env
   }
-  console.log(cp.execFileSync(np, [ip], options).toString())
+  cp.execFileSync(np, [ip], options).toString();
 })
