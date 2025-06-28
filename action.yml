@@ -20,7 +20,7 @@ inputs:
   upload_bundles:
     description: 'Whether to upload the xcresult bundles. possible values: always, failure, never. Specifying failure will only upload the bundle if all the tests do not pass.'
     default: always
-  delete_merged_bundles:
+  delete_merged_results:
     description: 'If using merged results, delete the merged result bundle after processing'
     default: false
 runs:
